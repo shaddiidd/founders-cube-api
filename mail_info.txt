@@ -1,0 +1,8 @@
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.eu.mailgun.org
+MAIL_PORT=465
+MAIL_USERNAME=noreply@mail.thefounderscube.com
+MAIL_PASSWORD=5da5a121b58fb0db3d3dea2b013a871f-0a688b4a-7f0dc5fe
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@mail.thefounderscube.com
+MAIL_FROM_NAME="The Founders Cube"
