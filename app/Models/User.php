@@ -35,6 +35,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'application_id',
         'referral_code',
         'country',
+        'company',
     ];
 
     /**
@@ -62,6 +63,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    public function links()
+    {
+        return $this->hasMany(Link::class);
     }
 
     public function application()

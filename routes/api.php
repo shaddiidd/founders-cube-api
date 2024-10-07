@@ -53,6 +53,9 @@ Route::middleware(['auth:api', 'user_type:admin'])->group(function () {
     Route::put('/request-payment/{id}', [TransactionController::class, 'deactivateAccountForPayment']);
     Route::put('/free-months/{id}', [TransactionController::class, 'freeMonths']);
     Route::delete('/kickout/{id}', [UserAuthController::class, 'kickout']);
+
+    Route::put('/update-configs', [ConfigController::class, 'updateAll']);
+    Route::put('/configs/{key}', [ConfigController::class, 'update']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -78,6 +81,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/subscribe/{id}', [TransactionController::class, 'store']);
 
     Route::get('/configs', [ConfigController::class, 'index']);
-    Route::put('/update-configs', [ConfigController::class, 'updateAll']);
-    Route::put('/configs/{key}', [ConfigController::class, 'update']);
 });

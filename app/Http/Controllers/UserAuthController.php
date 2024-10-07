@@ -31,7 +31,8 @@ class UserAuthController extends Controller
             'verified',
             'special_member',
             'is_subscription_active',
-            'subscription_ends_at'
+            'subscription_ends_at',
+            'company',
         )
             ->where(function ($query) {
                 $query->where('active', true)
@@ -190,14 +191,23 @@ class UserAuthController extends Controller
 
     public function show($id)
     {
-        $user = User::find($id);
-
+        $user = User::with('links')->find($id);
+    
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
         }
-
-        return response($user, 201);
-    }
+    
+        // Add the links directly into the user object
+        $user->links = $user->links->map(function($link) {
+            return [
+                'id' => $link->id,
+                'title' => $link->title,
+                'url' => $link->url,
+            ];
+        });
+    
+        return response()->json($user, 200);
+    }    
 
     public function login(Request $request)
     {
@@ -412,9 +422,9 @@ class UserAuthController extends Controller
             'Wearable Technology',
             'Web Development',
         ];
+
         $user = User::find($request->user()->id);
 
-        // Validate the request data
         $validatedData = $request->validate([
             'full_name' => 'required|string',
             'bio' => 'required|string|min:300',
@@ -422,18 +432,31 @@ class UserAuthController extends Controller
             'url' => 'nullable|string',
             'country' => 'required|string',
             'industry' => 'required|string',
+            'company' => 'nullable|string',
+            'links' => 'nullable|array',
+            'links.*.title' => 'required|string',
+            'links.*.url' => 'required|url',
         ]);
 
-        if (!in_array(request()->industry, $options)) {
+        if (!in_array($validatedData['industry'], $options)) {
             return response()->json(['message' => 'Invalid industry'], 400);
         }
 
-
-        // Update user details
         $user->fill($validatedData);
         $user->save();
 
-        return response("User details updated successfully", 200);
+        foreach ($validatedData['links'] as $linkData) {
+            $linkExists = $user->links()->where('url', $linkData['url'])->exists();
+
+            if (!$linkExists) {
+                $user->links()->create([
+                    'title' => $linkData['title'],
+                    'url' => $linkData['url'],
+                ]);
+            }
+        }
+
+        return response("User details and links updated successfully", 200);
     }
 
     public function profilePicture(Request $request)
