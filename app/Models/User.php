@@ -10,6 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -36,6 +37,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'referral_code',
         'country',
         'company',
+        'editor',
+        'slug',
     ];
 
     /**
@@ -108,4 +111,43 @@ class User extends Authenticatable implements MustVerifyEmail
 
         return null;
     }
+
+    public function blogs()
+    {
+        return $this->hasMany(Blog::class);
+    }
+
+    public function likedBlogs()
+    {
+        return $this->belongsToMany(Blog::class, 'blog_likes', 'user_id', 'blog_id')->withTimestamps();
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($user) {
+            $user->slug = static::generateUniqueSlug($user->full_name);
+        });
+    
+        static::updating(function ($user) {
+            if ($user->isDirty('full_name') || empty($user->slug)) {
+                $user->slug = static::generateUniqueSlug($user->full_name, $user->id);
+            }
+        });
+    }
+    
+    public static function generateUniqueSlug($name, $userId = null)
+    {
+        $slug = Str::slug($name ?: 'user');
+        $originalSlug = $slug;
+        $counter = 1;
+    
+        while (static::where('slug', $slug)->when($userId, function ($query, $userId) {
+            return $query->where('id', '!=', $userId);
+        })->exists()) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+        }
+    
+        return $slug;
+    }    
 }

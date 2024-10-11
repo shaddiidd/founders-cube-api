@@ -5,6 +5,8 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\BlogLikeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ConfigController;
@@ -56,6 +58,17 @@ Route::middleware(['auth:api', 'user_type:admin'])->group(function () {
 
     Route::put('/update-configs', [ConfigController::class, 'updateAll']);
     Route::put('/configs/{key}', [ConfigController::class, 'update']);
+
+    Route::get('/blogs', [BlogController::class, 'index']);
+    Route::post('/blogs', [BlogController::class, 'store']);
+    Route::put('/blogs/{id}', [BlogController::class, 'update']);
+    Route::get('/blogs/{slug}', [BlogController::class, 'show']);
+    Route::delete('/blogs/{id}', [BlogController::class, 'destroy']);
+
+    Route::put('/make-editor/{id}', [UserAuthController::class, 'makeEditor']);
+    Route::put('/remove-editor/{id}', [UserAuthController::class, 'removeEditor']);
+    Route::get('/pending-blog', [BlogController::class, 'pendingBlogs']);
+    Route::put('/approve-blog/{id}', [BlogController::class, 'approve']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -81,4 +94,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/subscribe/{id}', [TransactionController::class, 'store']);
 
     Route::get('/configs', [ConfigController::class, 'index']);
+
+    Route::post('/blogs/{id}/like', [BlogLikeController::class, 'store']);
+    Route::delete('/blogs/{id}/unlike', [BlogLikeController::class, 'destroy']);
+
 });
